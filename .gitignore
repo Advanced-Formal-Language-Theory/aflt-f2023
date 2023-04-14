@@ -7,6 +7,6 @@ rayuela.egg-info
 .vscode
 /data
 .history
-*pkl
-
+*.pkl
+*.zip
 testing.ipynb
