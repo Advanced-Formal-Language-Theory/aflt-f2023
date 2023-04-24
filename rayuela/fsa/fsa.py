@@ -395,6 +395,30 @@ class FSA:
         """construct the union of the two FSAs"""
         # Assignment 1: Question 4.i
         raise NotImplementedError
+    
+    def single_I(self):
+        """Returns an equivalent FSA with only 1 initial state"""
+        if len([q for q, _ in self.I]) == 1:
+            return self
+
+        # Find suitable names for the new state
+        ixs = [q.idx for q in self.Q]
+        start_id = 0
+        while f"single_I_{start_id}" in ixs:
+            start_id += 1
+
+        F = self.spawn(keep_final=True)
+
+        for i in self.Q:
+            for a, j, w in self.arcs(i):
+                F.add_arc(i, a, j, w)
+
+        for i, w in self.I:
+            F.add_arc(State(f"single_I_{start_id}"), ε, i, w)
+
+        F.set_I(State(f"single_I_{start_id}"), F.R.one)
+
+        return F
 
     def concatenate(self, fsa):
         """construct the concatenation of the two FSAs"""
