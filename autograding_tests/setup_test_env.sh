@@ -1,6 +1,6 @@
 #!/bin/bash
 
-wget https://github.com/Advanced-Formal-Language-Theory/aflt-f2023/releases/download/1.0/pickles.zip
+wget https://github.com/Advanced-Formal-Language-Theory/aflt-f2023/releases/download/1.1/pickles.zip
 unzip pickles.zip -d autograding_tests
 rm pickles.zip
 
