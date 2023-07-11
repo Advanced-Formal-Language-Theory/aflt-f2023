@@ -274,8 +274,8 @@ class CFG:
                 continue
 
             head_str, tmp = line.split("→")
-            tail_str, weight = tmp.split("\t")
-            tail_str = tail_str.strip().split(" ")
+            tail_str, weight = tmp.split(":")
+            tail_str = tail_str.strip().split()
 
             head = NT(head_str.strip())
             tail = []
