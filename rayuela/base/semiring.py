@@ -1,23 +1,20 @@
-from typing import Optional, Type
-
-import numpy as np
-
-from fractions import Fraction
 from collections import defaultdict as dd
-from frozendict import frozendict
-
+from fractions import Fraction
 from math import exp, log
 
+import numpy as np
+from frozendict import frozendict
 
-# base code from https://github.com/timvieira/hypergraphs/blob/master/hypergraphs/semirings/boolean.py
+
+# base code from
+# https://github.com/timvieira/hypergraphs/blob/master/hypergraphs/semirings/boolean.py
 class Semiring:
-
     zero: "Semiring"
     one: "Semiring"
     idempotent = False
 
-    def __init__(self, score):
-        self.score = score
+    def __init__(self, value):
+        self.value = value
 
     @classmethod
     def zeros(cls, N, M):
@@ -39,6 +36,11 @@ class Semiring:
 
         return W
 
+    @classmethod
+    @property
+    def is_field(self):
+        return False
+
     def __add__(self, other):
         raise NotImplementedError
 
@@ -46,34 +48,34 @@ class Semiring:
         raise NotImplementedError
 
     def __eq__(self, other):
-        return self.score == other.score
+        return self.value == other.value
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 class Derivation(Semiring):
-    def __init__(self, score):
-        super().__init__(score)
+    def __init__(self, value):
+        super().__init__(value)
 
     def star(self):
         return Derivation.one
 
     def __add__(self, other):
-        return Derivation(frozenset(self.score.union(other.score)))
+        return Derivation(frozenset(self.value.union(other.value)))
 
     def __mul__(self, other):
         # TODO: add special cases
-        return Derivation(frozenset([x + y for x in self.score for y in other.score]))
+        return Derivation(frozenset([x + y for x in self.value for y in other.value]))
 
     def __eq__(self, other):
-        return self.score == other.score
+        return self.value == other.value
 
     def __repr__(self):
-        return f"Derivation({self.score})"
+        return f"Derivation({self.value})"
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 Derivation.zero = Derivation(frozenset([]))
@@ -82,24 +84,24 @@ Derivation.idempotent = False
 
 
 class KBest(Semiring):
-    def __init__(self, score):
-        super().__init__(score)
+    def __init__(self, value):
+        super().__init__(value)
 
     def __add__(self, other):
-        return KBest(self.score.union(other.score))
+        return KBest(self.value.union(other.value))
 
     def __mul__(self, other):
         # TODO: add special cases
-        return KBest(set([x + y for x in self.score for y in other.score]))
+        return KBest(set([x + y for x in self.value for y in other.value]))
 
     def __eq__(self, other):
-        return self.score == other.score
+        return self.value == other.value
 
     def __repr__(self):
-        return f"KBest({self.score})"
+        return f"KBest({self.value})"
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 KBest.zero = Derivation(set([]))
@@ -108,18 +110,18 @@ KBest.idempotent = False
 
 
 class Free(Semiring):
-    def __init__(self, score):
-        super().__init__(score)
+    def __init__(self, value):
+        super().__init__(value)
 
     def star(self):
-        return "(" + self.score + ")^*"
+        return "(" + self.value + ")^*"
 
     def __add__(self, other):
         if other is self.zero:
             return self
         if self is self.zero:
             return other
-        return Free(self.score + " + " + other.score)
+        return Free(self.value + " + " + other.value)
 
     def __mul__(self, other):
         if other is self.one:
@@ -130,16 +132,16 @@ class Free(Semiring):
             return self.zero
         if self is self.zero:
             return self.zero
-        return Free(self.score + other.score)
+        return Free(self.value + other.value)
 
     def __eq__(self, other):
-        return self.score == other.score
+        return self.value == other.value
 
     def __repr__(self):
-        return f"Free({self.score})"
+        return f"Free({self.value})"
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 Free.zero = Free("∞")
@@ -148,8 +150,8 @@ Free.idempotent = False
 
 
 class Count(Semiring):
-    def __init__(self, score):
-        super().__init__(score)
+    def __init__(self, value):
+        super().__init__(value)
 
     def star(self):
         return self.one
@@ -159,7 +161,7 @@ class Count(Semiring):
             return self
         if self is self.zero:
             return other
-        return Count(self.score + other.score)
+        return Count(self.value + other.value)
 
     def __mul__(self, other):
         if other is self.one:
@@ -170,19 +172,19 @@ class Count(Semiring):
             return self.zero
         if self is self.zero:
             return self.zero
-        return Count(self.score * other.score)
+        return Count(self.value * other.value)
 
     def __eq__(self, other):
-        return self.score == other.score
+        return self.value == other.value
 
     def __repr__(self):
-        return f"{self.score}"
+        return f"{self.value}"
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
     def __float__(self):
-        return float(self.score)
+        return float(self.value)
 
 
 Count.zero = Count(0)
@@ -195,15 +197,15 @@ class Entropy(Semiring):
         super().__init__((x, y))
 
     def star(self):
-        tmp = 1.0 / (1.0 - self.score[0])
-        return Entropy(tmp, tmp * tmp * self.score[1])
+        tmp = 1.0 / (1.0 - self.value[0])
+        return Entropy(tmp, tmp * tmp * self.value[1])
 
     def __add__(self, other):
         if other is self.zero:
             return self
         if self is self.zero:
             return other
-        return Entropy(self.score[0] + other.score[0], self.score[1] + other.score[1])
+        return Entropy(self.value[0] + other.value[0], self.value[1] + other.value[1])
 
     def __mul__(self, other):
         if other is self.one:
@@ -215,18 +217,18 @@ class Entropy(Semiring):
         if self is self.zero:
             return self.zero
         return Entropy(
-            self.score[0] * other.score[0],
-            self.score[0] * other.score[1] + self.score[1] * other.score[0],
+            self.value[0] * other.value[0],
+            self.value[0] * other.value[1] + self.value[1] * other.value[0],
         )
 
     def __eq__(self, other):
-        return self.score == other.score
+        return self.value == other.value
 
     def __repr__(self):
-        return f"Entropy({self.score})"
+        return f"Entropy({self.value})"
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 Entropy.zero = Entropy(0.0, 0.0)
@@ -234,13 +236,12 @@ Entropy.one = Entropy(1.0, 0.0)
 Entropy.idempotent = False
 
 
-def cky_semiring_builder(G, R):
-
+def cky_semiring_builder(G, R):  # noqa: C901
     one = "1"
 
     class CKY(Semiring):
-        def __init__(self, score):
-            super().__init__(frozendict(score))
+        def __init__(self, value):
+            super().__init__(frozendict(value))
 
         def star(self):
             return CKY.one
@@ -252,14 +253,14 @@ def cky_semiring_builder(G, R):
                 return other
 
             result = dd(lambda: self.R.zero)
-            for k, v in self.score.items():
+            for k, v in self.value.items():
                 result[k] += v
-            for k, v in other.score.items():
+            for k, v in other.value.items():
                 result[k] += v
 
             return CKY(frozendict(result))
 
-        def __mul__(self, other):
+        def __mul__(self, other):  # noqa: C901
             if other is self.one:
                 return self
             if self is self.one:
@@ -272,28 +273,28 @@ def cky_semiring_builder(G, R):
             result = dd(lambda: self.R.zero)
 
             # special handling of "1" symbol
-            if one in self.score:
-                for nt, v in other.score.items():
+            if one in self.value:
+                for nt, v in other.value.items():
                     result[nt] += v
-            if one in other.score:
-                for nt, v in self.score.items():
+            if one in other.value:
+                for nt, v in self.value.items():
                     result[nt] += v
 
             # Cartesian product subject to grammar constraint
             for p, w in self.G.binary:
-                if p.body[0] in self.score and p.body[1] in other.score:
-                    result[p.head] += self.score[p.body[0]] * other.score[p.body[1]] * w
+                if p.body[0] in self.value and p.body[1] in other.value:
+                    result[p.head] += self.value[p.body[0]] * other.value[p.body[1]] * w
 
             return CKY(frozendict(result))
 
         def __eq__(self, other):
-            return self.score == other.score
+            return self.value == other.value
 
         def __repr__(self):
-            return f"{self.score}"
+            return f"{self.value}"
 
         def __hash__(self):
-            return hash(self.score)
+            return hash(self.value)
 
     CKY.G = G
     CKY.R = R
@@ -306,8 +307,8 @@ def cky_semiring_builder(G, R):
 
 
 class String(Semiring):
-    def __init__(self, score):
-        super().__init__(score)
+    def __init__(self, value):
+        super().__init__(value)
 
     def star(self):
         return String.one
@@ -319,7 +320,7 @@ class String(Semiring):
             return self
         if self is self.zero:
             return other
-        return String(lcp(self.score, other.score))
+        return String(lcp(self.value, other.value))
 
     def __mul__(self, other):
         if other is self.one:
@@ -330,22 +331,22 @@ class String(Semiring):
             return self.zero
         if self is self.zero:
             return self.zero
-        return String(self.score + other.score)
+        return String(self.value + other.value)
 
     def __truediv__(self, other):
         from rayuela.base.misc import lcp
 
-        prefix = lcp(self.score, other.score)
-        return String(self.score[len(prefix) :])
+        prefix = lcp(self.value, other.value)
+        return String(self.value[len(prefix) :])
 
     def __eq__(self, other):
-        return self.score == other.score
+        return self.value == other.value
 
     def __repr__(self):
-        return f"{self.score}"
+        return f"{self.value}"
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 # unique "infinity" string
@@ -378,8 +379,8 @@ class Segment:
 
 
 class SegmentationGroup(Semiring):
-    def __init__(self, score):
-        super().__init__(score)
+    def __init__(self, value):
+        super().__init__(value)
 
     def star(self):
         return SegmentationGroup.one
@@ -390,9 +391,24 @@ class SegmentationGroup(Semiring):
         if self is self.zero:
             return other
 
-        if len(self.score) < len(other.score):
+        if len(self.value) < len(other.value):
             return self
         return other
+
+    @staticmethod
+    def _simplify(arg1, arg2):
+        changed = True
+        while changed:
+            changed = False
+            if len(arg1) == 0 or len(arg2) == 0:
+                break
+
+            if ~arg1[-1] == arg2[0]:
+                arg1 = arg1[:-1]
+                arg2 = arg2[1:]
+                changed = True
+
+        return arg1 + arg2
 
     def __mul__(self, other):
         if other is self.one:
@@ -404,37 +420,27 @@ class SegmentationGroup(Semiring):
         if self is self.zero:
             return self.zero
 
-        def simplify(arg1, arg2):
-            changed = True
-            while changed:
-                changed = False
-                if len(arg1) == 0 or len(arg2) == 0:
-                    break
-
-                if ~arg1[-1] == arg2[0]:
-                    arg1 = arg1[:-1]
-                    arg2 = arg2[1:]
-                    changed = True
-
-            return arg1 + arg2
-
         # make this better
         simplified = tuple(
-            [x for x in simplify(self.score, other.score) if x.segment != ""]
+            [
+                x
+                for x in SegmentationGroup._simplify(self.value, other.value)
+                if x.segment != ""
+            ]
         )
         return SegmentationGroup(simplified)
 
     def __invert__(self):
-        return SegmentationGroup(tuple(reversed([~x for x in self.score])))
+        return SegmentationGroup(tuple(reversed([~x for x in self.value])))
 
     def __eq__(self, other):
-        return self.score == other.score
+        return self.value == other.value
 
     def __repr__(self):
-        return f"{'|'.join(map(str, self.score))}"
+        return f"{'|'.join(map(str, self.value))}"
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 # unique "infinity" string
@@ -447,25 +453,25 @@ SegmentationGroup.cancellative = False
 
 
 class Boolean(Semiring):
-    def __init__(self, score):
-        super().__init__(score)
+    def __init__(self, value):
+        super().__init__(value)
 
     def star(self):
         return Boolean.one
 
     def __add__(self, other):
-        return Boolean(self.score or other.score)
+        return Boolean(self.value or other.value)
 
     def __mul__(self, other):
-        if other.score is self.one:
-            return self.score
-        if self.score is self.one:
-            return other.score
-        if other.score is self.zero:
+        if other.value is self.one:
+            return self.value
+        if self.value is self.one:
+            return other.value
+        if other.value is self.zero:
             return self.zero
-        if self.score is self.zero:
+        if self.value is self.zero:
             return self.zero
-        return Boolean(other.score and self.score)
+        return Boolean(other.value and self.value)
 
     # TODO: is this correct?
     def __invert__(self):
@@ -475,19 +481,19 @@ class Boolean(Semiring):
         return Boolean.one
 
     def __eq__(self, other):
-        return self.score == other.score
+        return self.value == other.value
 
     def __lt__(self, other):
-        return self.score < other.score
+        return self.value < other.value
 
     def __repr__(self):
-        return f"{self.score}"
+        return f"{self.value}"
 
     def __str__(self):
-        return str(self.score)
+        return str(self.value)
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 Boolean.zero = Boolean(False)
@@ -498,17 +504,17 @@ Boolean.cancellative = True
 
 
 class MaxPlus(Semiring):
-    def __init__(self, score):
-        super().__init__(score)
+    def __init__(self, value):
+        super().__init__(value)
 
     def star(self):
         return self.one
 
     def __float__(self):
-        return float(self.score)
+        return float(self.value)
 
     def __add__(self, other):
-        return MaxPlus(max(self.score, other.score))
+        return MaxPlus(max(self.value, other.value))
 
     def __mul__(self, other):
         if other is self.one:
@@ -519,19 +525,19 @@ class MaxPlus(Semiring):
             return self.zero
         if self is self.zero:
             return self.zero
-        return MaxPlus(self.score + other.score)
+        return MaxPlus(self.value + other.value)
 
     def __invert__(self):
-        return MaxPlus(-self.score)
+        return MaxPlus(-self.value)
 
     def __truediv__(self, other):
-        return MaxPlus(self.score - other.score)
+        return MaxPlus(self.value - other.value)
 
     def __lt__(self, other):
-        return self.score < other.score
+        return self.value < other.value
 
     def __repr__(self):
-        return f"MaxPlus({self.score})"
+        return f"MaxPlus({self.value})"
 
 
 MaxPlus.zero = MaxPlus(float("-inf"))
@@ -542,20 +548,20 @@ MaxPlus.cancellative = True
 
 
 class Tropical(Semiring):
-    def __init__(self, score):
-        self.score = score
+    def __init__(self, value):
+        self.value = value
 
     def star(self):
         return self.one
 
     def __float__(self):
-        return float(self.score)
+        return float(self.value)
 
     def __int__(self):
-        return int(self.score)
+        return int(self.value)
 
     def __add__(self, other):
-        return Tropical(min(self.score, other.score))
+        return Tropical(min(self.value, other.value))
 
     def __mul__(self, other):
         if other is self.one:
@@ -566,22 +572,22 @@ class Tropical(Semiring):
             return self.zero
         if self is self.zero:
             return self.zero
-        return Tropical(self.score + other.score)
+        return Tropical(self.value + other.value)
 
     def __invert__(self):
-        return Tropical(-self.score)
+        return Tropical(-self.value)
 
     def __truediv__(self, other):
-        return Tropical(self.score - other.score)
+        return Tropical(self.value - other.value)
 
     def __lt__(self, other):
-        return self.score < other.score
+        return self.value < other.value
 
     def __repr__(self):
-        return f"Tropical({self.score})"
+        return f"Tropical({self.value})"
 
     def __str__(self):
-        return str(self.score)
+        return str(self.value)
 
 
 Tropical.zero = Tropical(float("inf"))
@@ -592,17 +598,22 @@ Tropical.cancellative = True
 
 
 class Rational(Semiring):
-    def __init__(self, score):
-        self.score = Fraction(score)
+    def __init__(self, value):
+        self.value = Fraction(value)
 
     def star(self):
-        return Rational(Fraction("1") / (Fraction("1") - self.score))
+        return Rational(Fraction("1") / (Fraction("1") - self.value))
+
+    @classmethod
+    @property
+    def is_field(self):
+        return True
 
     def __float__(self):
-        return float(self.score)
+        return float(self.value)
 
     def __add__(self, other):
-        return Rational(self.score + other.score)
+        return Rational(self.value + other.value)
 
     def __mul__(self, other):
         if other is self.one:
@@ -613,27 +624,27 @@ class Rational(Semiring):
             return self.zero
         if self is self.zero:
             return self.zero
-        return Rational(self.score * other.score)
+        return Rational(self.value * other.value)
 
     def __invert__(self):
-        return Rational(1 / self.score)
+        return Rational(1 / self.value)
 
     def __truediv__(self, other):
-        return Rational(self.score / other.score)
+        return Rational(self.value / other.value)
 
     def __eq__(self, other):
-        return np.allclose(float(self.score), float(other.score))
+        return np.allclose(float(self.value), float(other.value))
 
     def __lt__(self, other):
-        return self.score < other.score
+        return self.value < other.value
 
     def __repr__(self):
-        # return f'Real({self.score})'
-        return f"{self.score}"
+        # return f'Real({self.value})'
+        return f"{self.value}"
 
     # TODO: find out why this wasn't inherited
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 Rational.zero = Rational(Fraction("0"))
@@ -643,22 +654,27 @@ Rational.cancellative = True
 
 
 class Real(Semiring):
-    def __init__(self, score):
+    def __init__(self, value):
         # TODO: this is hack to deal with the fact
         # that we have to hash weights
-        self.score = score
+        self.value = value
 
     def star(self):
-        return Real(1.0 / (1.0 - self.score))
+        return Real(1.0 / (1.0 - self.value))
+
+    @classmethod
+    @property
+    def is_field(self):
+        return True
 
     def __float__(self):
-        return float(self.score)
+        return float(self.value)
 
     def __add__(self, other):
-        return Real(self.score + other.score)
+        return Real(self.value + other.value)
 
     def __sub__(self, other):
-        return Real(self.score - other.score)
+        return Real(self.value - other.value)
 
     def __mul__(self, other):
         if other is self.one:
@@ -669,31 +685,31 @@ class Real(Semiring):
             return self.zero
         if self is self.zero:
             return self.zero
-        return Real(self.score * other.score)
+        return Real(self.value * other.value)
 
     def __invert__(self):
-        return Real(1.0 / self.score)
+        return Real(1.0 / self.value)
 
     def __pow__(self, other):
-        return Real(self.score**other)
+        return Real(self.value**other)
 
     def __truediv__(self, other):
-        return Real(self.score / other.score)
+        return Real(self.value / other.value)
 
     def __lt__(self, other):
-        return self.score < other.score
+        return self.value < other.value
 
     def __repr__(self):
-        # return f'Real({self.score})'
-        return f"{round(self.score, 15)}"
+        # return f'Real({self.value})'
+        return f"{round(self.value, 3)}"
 
     def __eq__(self, other):
-        # return float(self.score) == float(other.score)
-        return np.allclose(float(self.score), float(other.score), atol=1e-6)
+        # return float(self.value) == float(other.value)
+        return np.allclose(float(self.value), float(other.value), atol=1e-6)
 
     # TODO: find out why this wasn't inherited
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 Real.zero = Real(0.0)
@@ -703,38 +719,38 @@ Real.cancellative = True
 
 
 class Log(Semiring):
-    def __init__(self, score):
+    def __init__(self, value):
         # TODO: this is hack to deal with the fact
         # that we have to hash weights
-        self.score = score
+        self.value = value
 
     def star(self):
-        return Log(-log(1 / exp(self.score) - 1) - self.score)
+        return Log(-log(1 / exp(self.value) - 1) - self.value)
 
     def __float__(self):
-        return float(self.score)
+        return float(self.value)
 
     def __add__(self, other):
         # stolen from https://github.com/timvieira/crf/blob/master/crf/basecrf.py
-        if self.score > other.score:
-            return Log(self.score + log(exp(other.score - self.score) + 1))
-            # return Log(self.score + log(sum(exp(other.score-self.score)).sum()))
-        return Log(other.score + log(exp(self.score - other.score + 1)))
+        if self.value > other.value:
+            return Log(self.value + log(exp(other.value - self.value) + 1))
+            # return Log(self.value + log(sum(exp(other.value-self.value)).sum()))
+        return Log(other.value + log(exp(self.value - other.value + 1)))
 
     def __mul__(self, other):
-        return Log(self.score + other.score)
+        return Log(self.value + other.value)
 
     def __repr__(self):
-        # return f'Real({self.score})'
-        return f"{round(self.score, 15)}"
+        # return f'Real({self.value})'
+        return f"{round(self.value, 15)}"
 
     def __eq__(self, other):
-        # return float(self.score) == float(other.score)
-        return np.allclose(float(self.score), float(other.score), atol=1e-3)
+        # return float(self.value) == float(other.value)
+        return np.allclose(float(self.value), float(other.value), atol=1e-3)
 
     # TODO: find out why this wasn't inherited
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 Log.zero = Log(-float("inf"))
@@ -744,16 +760,16 @@ Log.cancellative = True
 
 
 class Integer(Semiring):
-    def __init__(self, score):
+    def __init__(self, value):
         # TODO: this is hack to deal with the fact
         # that we have to hash weights
-        self.score = score
+        self.value = value
 
     def __float__(self):
-        return float(self.score)
+        return float(self.value)
 
     def __add__(self, other):
-        return Integer(self.score + other.score)
+        return Integer(self.value + other.value)
 
     def __mul__(self, other):
         if other is self.one:
@@ -764,19 +780,19 @@ class Integer(Semiring):
             return self.zero
         if self is self.zero:
             return self.zero
-        return Integer(self.score * other.score)
+        return Integer(self.value * other.value)
 
     def __lt__(self, other):
-        return self.score < other.score
+        return self.value < other.value
 
     def __repr__(self):
-        return f"Integer({self.score})"
+        return f"Integer({self.value})"
 
     def __eq__(self, other):
-        return float(self.score) == float(other.score)
+        return float(self.value) == float(other.value)
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
 Integer.zero = Integer(0)
@@ -791,22 +807,22 @@ def vector_semiring_builder(semiring, N):
             super().__init__(x)
 
         def star(self):
-            raise NotImplemented
+            raise NotImplementedError
 
         def __add__(self, other):
-            return VectorSemiring(self.score + other.score)
+            return VectorSemiring(self.value + other.value)
 
         def __mul__(self, other):
-            return VectorSemiring(self.score * other.score)
+            return VectorSemiring(self.value * other.value)
 
         def __eq__(self, other):
-            return self.score == other.score
+            return self.value == other.value
 
         def __repr__(self):
-            return f"Vector({self.score})"
+            return f"Vector({self.value})"
 
         def __hash__(self):
-            return hash(self.score)
+            return hash(self.value)
 
     VectorSemiring.zero = VectorSemiring(np.full(N, semiring.zero))
     VectorSemiring.one = VectorSemiring(np.full(N, semiring.one))
@@ -819,189 +835,84 @@ class ProductSemiring(Semiring):
     def __init__(self, x, y):
         super().__init__((x, y))
 
-    def star(self):
-        raise NotImplemented
-
     def __add__(self, other):
-        w1, w2 = self.score[0], other.score[0]
-        v1, v2 = self.score[1], other.score[1]
+        w1, w2 = self.value[0], other.value[0]
+        v1, v2 = self.value[1], other.value[1]
         return ProductSemiring(w1 + w2, v1 + v2)
 
     def __mul__(self, other):
-        w1, w2 = self.score[0], other.score[0]
-        v1, v2 = self.score[1], other.score[1]
+        w1, w2 = self.value[0], other.value[0]
+        v1, v2 = self.value[1], other.value[1]
         return ProductSemiring(w1 * w2, v1 * v2)
 
     def __truediv__(self, other):
-        w1, w2 = self.score[0], other.score[0]
-        v1, v2 = self.score[1], other.score[1]
+        w1, w2 = self.value[0], other.value[0]
+        v1, v2 = self.value[1], other.value[1]
         return ProductSemiring(w1 / w2, v1 / v2)
 
     def __invert__(self):
-        return ProductSemiring(~self.score[0], ~self.score[1])
+        return ProductSemiring(~self.value[0], ~self.value[1])
+
+    def star(self):
+        return ProductSemiring(self.value[0].star(), self.value[1].star())
 
     def __eq__(self, other):
-        return self.score == other.score
+        return self.value == other.value
 
     def __repr__(self):
-        if isinstance(self.score[0], String):
+        if isinstance(self.value[0], String):
             # the imporant special case of encoding transducers
-            if len(self.score[0].score) > 0:
-                return f"{self.score[0]} / {self.score[1]}"
+            if len(self.value[0].value) > 0:
+                return f"{self.value[0]} / {self.value[1]}"
             else:
-                return f"{self.score[1]}"
-        return f"〈{self.score[0]}, {self.score[1]}〉"
+                return f"{self.value[1]}"
+        return f"〈{self.value[0]}, {self.value[1]}〉"
 
     def __hash__(self):
-        return hash(self.score)
+        return hash(self.value)
 
 
-def product_semiring_builder(semiring1, semiring2):
-
-    ProductSemiring.zero = ProductSemiring(semiring1.zero, semiring2.zero)
-    ProductSemiring.one = ProductSemiring(semiring1.one, semiring2.one)
-    ProductSemiring.idempotent = semiring1.idempotent and semiring2.idempotent
+def product_semiring_builder(R1, R2):
+    ProductSemiring.zero = ProductSemiring(R1.zero, R2.zero)
+    ProductSemiring.one = ProductSemiring(R1.one, R2.one)
+    ProductSemiring.idempotent = R1.idempotent and R2.idempotent
 
     return ProductSemiring
 
 
-def expectation_semiring_builder(semiring1, semiring2):
+def expectation_semiring_builder(R1, R2):
     class ExpectationSemiring(Semiring):
         def __init__(self, x, y):
             super().__init__((x, y))
 
         def star(self):
-            w, v = self.score[0], self.score[1]
+            w, v = self.value[0], self.value[1]
             return ExpectationSemiring(w.star(), w.star() * w.star() * v)
 
         def __add__(self, other):
-            w1, w2 = self.score[0], other.score[0]
-            v1, v2 = self.score[1], other.score[1]
+            w1, w2 = self.value[0], other.value[0]
+            v1, v2 = self.value[1], other.value[1]
             return ExpectationSemiring(w1 + w2, v1 + v2)
 
         def __mul__(self, other):
-            w1, w2 = self.score[0], other.score[0]
-            v1, v2 = self.score[1], other.score[1]
+            w1, w2 = self.value[0], other.value[0]
+            v1, v2 = self.value[1], other.value[1]
             return ExpectationSemiring(w1 * w2, w1 * v2 + w2 * v1)
 
         def __eq__(self, other):
-            return self.score == other.score
+            return self.value == other.value
 
         def __repr__(self):
-            return f"Expect({self.score})"
+            return f"Expect({self.value})"
 
         def __hash__(self):
-            return hash(self.score)
+            return hash(self.value)
 
-    ExpectationSemiring.zero = ExpectationSemiring(semiring1.zero, semiring2.zero)
-    ExpectationSemiring.one = ExpectationSemiring(semiring1.one, semiring2.zero)
-    ExpectationSemiring.idempotent = semiring1.idempotent and semiring2.idempotent
+    ExpectationSemiring.zero = ExpectationSemiring(R1.zero, R2.zero)
+    ExpectationSemiring.one = ExpectationSemiring(R1.one, R2.zero)
+    ExpectationSemiring.idempotent = R1.idempotent and R2.idempotent
 
     return ExpectationSemiring
-
-
-class NullableSemiring(Semiring):
-    null: "NullableSemiring"
-
-    def __init__(self, x: Optional[Semiring] = None):
-        if x is not None:
-            # NullableSemiring can only be used as a wrapper around another semiring,
-            # not itself
-            assert not isinstance(x, NullableSemiring)
-            super().__init__(x)
-            self.R_base = type(x)
-            self.isnull = False
-        else:
-            self.isnull = True
-
-    def __add__(self, other):
-        if self == NullableSemiring.null:
-            return other
-        elif other == NullableSemiring.null:
-            return self
-        else:
-            return NullableSemiring(self.score + other.score)
-
-    def __sub__(self, other):
-        if self == NullableSemiring.null:
-            return -other
-        elif other == NullableSemiring.null:
-            return self
-        else:
-            return NullableSemiring(self.score - other.score)
-
-    def __mul__(self, other):
-        if NullableSemiring.null in [self, other]:
-            return NullableSemiring.null
-        else:
-            return NullableSemiring(self.score * other.score)
-
-    def __eq__(self, other):
-        if self.isnull and other.isnull:
-            return True
-        elif self.isnull or other.isnull:
-            return False
-        else:
-            return self.score == other.score
-
-    def star(self):
-        if self != NullableSemiring.null:
-            return self.score.star()
-        else:
-            raise TypeError
-
-    def __float__(self):
-        if self != NullableSemiring.null:
-            return float(self.score)
-        else:
-            raise TypeError
-
-    def __invert__(self):
-        if self != NullableSemiring.null:
-            return ~self.score
-        else:
-            raise TypeError
-
-    def __truediv__(self, other):
-        if self != NullableSemiring.null:
-            return self.score / other.score
-        else:
-            raise TypeError
-
-    def __lt__(self, other):
-        if self != NullableSemiring.null:
-            return self.score < other.score
-        else:
-            raise TypeError
-
-    def __repr__(self):
-        if self != NullableSemiring.null:
-            return self.score.__repr__()
-        else:
-            return "null"
-
-    def __str__(self):
-        if self != NullableSemiring.null:
-            return self.score.__str__()
-        else:
-            return "null"
-
-    def __hash__(self):
-        if self != NullableSemiring.null:
-            return hash(self.score)
-        else:
-            raise TypeError
-
-
-NullableSemiring.null = NullableSemiring()
-
-
-def nullable_semiring_builder(R: Type[Semiring]) -> Type[NullableSemiring]:
-
-    NullableSemiring.zero = NullableSemiring(R.zero)
-    NullableSemiring.one = NullableSemiring(R.one)
-
-    return NullableSemiring
 
 
 def conditionalpoisson_semiring_builder(K):
@@ -1010,25 +921,25 @@ def conditionalpoisson_semiring_builder(K):
             super().__init__(x)
 
         def star(self):
-            raise NotImplemented
+            raise NotImplementedError
 
         def __add__(self, other):
-            return ConditionalPoisson(np.convolve(self.score, other.score)[:K])
+            return ConditionalPoisson(np.convolve(self.value, other.value)[:K])
 
         def __mul__(self, other):
-            return ConditionalPoisson(self.score * other.score)
+            return ConditionalPoisson(self.value * other.value)
 
         def __eq__(self, other):
             return (
                 isinstance(other, ConditionalPoisson)
-                and (self.score == other.score).all()
+                and (self.value == other.value).all()
             )
 
         def __repr__(self):
-            return str(self.score)
+            return str(self.value)
 
         def __hash__(self):
-            return hash(self.score)
+            return hash(self.value)
 
     tmp = np.zeros((K))
     tmp[0] = 1

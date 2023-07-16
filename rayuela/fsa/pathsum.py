@@ -7,7 +7,7 @@ import numpy as np
 from numpy import linalg as LA
 
 from rayuela.base.datastructures import PriorityQueue
-from rayuela.base.semiring import NullableSemiring, Semiring, nullable_semiring_builder
+from rayuela.base.semiring import Semiring
 from rayuela.base.symbol import φ, Sym
 from rayuela.fsa.state import State
 
