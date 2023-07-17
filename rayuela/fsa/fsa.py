@@ -631,7 +631,7 @@ class FSA:
 
         def weight2str(w):
             if isinstance(w, Real):
-                return f"{w.score:.3f}"
+                return f"{w.value:.3f}"
             return str(w)
 
         ret = []

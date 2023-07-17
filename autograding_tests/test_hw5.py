@@ -41,7 +41,7 @@ def test_minimization():
     for fsa, mfsa in minimized_fsas:
         minimized = fsa.minimize(strategy="partition")
         assert len(mfsa.Q) == len(minimized.Q) 
-        assert same_number_of_arcs(mfsa, minimized)
+        assert compare_fsas(mfsa, minimized)
 
 def test_minimization_example_1():
     fsa = FSA(R=Boolean)
@@ -262,20 +262,20 @@ def test_minimization_example_Real():
     mfsa = fsa.minimize()
 
     MFSA = FSA(Real)
-    MFSA.set_I(State('{a}'), Real(0.019))
+    MFSA.set_I(State('{a}'), Real(0.01870968))
 
-    MFSA.add_arc(State('{a}'), '1', State('{b}'), Real(0.31))
-    MFSA.add_arc(State('{a}'), '2', State('{c}'), Real(0.69))
-    MFSA.add_arc(State('{b}'), '1', State('{a}'), Real(0.101))
-    MFSA.add_arc(State('{b}'), '2', State('{d,e}'), Real(0.899))
-    MFSA.add_arc(State('{c}'), '1', State('{d,e}'), Real(0.806))
+    MFSA.add_arc(State('{a}'), '1', State('{b}'), Real(0.30962644))
+    MFSA.add_arc(State('{a}'), '2', State('{c}'), Real(0.69037356))
+    MFSA.add_arc(State('{b}'), '1', State('{a}'), Real(0.10092807))
+    MFSA.add_arc(State('{b}'), '2', State('{d,e}'), Real(0.89907193))
+    MFSA.add_arc(State('{c}'), '1', State('{d,e}'), Real(0.80645161))
     MFSA.add_arc(State('{d,e}'), '1', State('{d,e}'), Real(0.25))
 
-    MFSA.add_F(State('{c}'), Real(1))
-    MFSA.add_F(State('{d,e}'), Real(1))
+    MFSA.add_F(State('{c}'), Real(0.19354838))
+    MFSA.add_F(State('{d,e}'), Real(0.750))
 
-    assert len(mfsa.Q) == len(MFSA.Q) 
-    assert same_number_of_arcs(mfsa, MFSA)
+    assert len(mfsa.Q) == len(MFSA.Q)
+    assert compare_fsas(mfsa, MFSA)
 
 
 def test_weighted_equivalence():
