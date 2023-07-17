@@ -4,7 +4,7 @@ from frozendict import frozendict
 from itertools import product
 
 from rayuela.base.semiring import Semiring, Boolean
-from rayuela.base.symbol import Sym, ε
+from rayuela.base.symbol import Expr, Sym, ε
 from rayuela.base.misc import straight
 
 from rayuela.fsa.fsa import FSA
@@ -47,7 +47,7 @@ class CFG:
     def terminal(self):
         for p, w in self.P:
             (head, body) = p
-            if len(body) == 1 and isinstance(body[0], Sym):
+            if len(body) == 1 and (isinstance(body[0], Sym)  or isinstance(body[0], Expr)):
                 yield p, w
 
     @property
@@ -110,7 +110,7 @@ class CFG:
 
         def has_terminal(body):
             for elem in body:
-                if isinstance(elem, Sym) and elem != ε:
+                if isinstance(elem, Sym) or isinstance(elem, Expr) and elem != ε:
                     return True
             return False
 
@@ -149,7 +149,7 @@ class CFG:
         for elem in body:
             if isinstance(elem, NT):
                 self.V.add(elem)
-            elif isinstance(elem, Sym) and elem != ε:
+            elif isinstance(elem, Sym) or isinstance(elem, Expr) and elem != ε:
                 self.Sigma.add(elem)
             elif elem != ε:
                 raise InvalidProduction
@@ -174,7 +174,7 @@ class CFG:
             for elem in p.body:
                 if isinstance(elem, NT):
                     nbody.append(NT(str(elem)))
-                elif isinstance(elem, Sym):
+                elif isinstance(elem, Sym) or isinstance(elem, Expr):
                     nbody.append(elem)
             ncfg.add(w, NT(str(p.head)), *nbody)
         ncfg.make_unary_fsa()

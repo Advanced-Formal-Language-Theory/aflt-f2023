@@ -1,5 +1,5 @@
 from itertools import chain, combinations
-from rayuela.base.symbol import Sym, ε
+from rayuela.base.symbol import Expr, Sym, ε
 from rayuela.cfg.nonterminal import NT, S
 
 
@@ -39,8 +39,8 @@ def separated(p):
     (head, body) = p
     if isinstance(body[0], NT):
         r = all([isinstance(elem, NT) for elem in body])
-    elif isinstance(body[0], Sym):
-        r = all([isinstance(elem, Sym) for elem in body])
+    elif isinstance(body[0], Sym) or isinstance(body[0], Expr):
+        r = all([isinstance(elem, Sym) or isinstance(elem, Expr) for elem in body])
     else:
         raise ValueError("All body elements are neither 'NT' nor 'Sym'")
     return r
