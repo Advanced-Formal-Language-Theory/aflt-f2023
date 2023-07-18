@@ -110,7 +110,7 @@ class CFG:
 
         def has_terminal(body):
             for elem in body:
-                if isinstance(elem, Sym) or isinstance(elem, Expr) and elem != ε:
+                if (isinstance(elem, Sym) or isinstance(elem, Expr)) and elem != ε:
                     return True
             return False
 
