@@ -53,7 +53,6 @@ class Transformer:
         pfsa = fsa.spawn()
         for i in fsa.Q:
             pfsa.set_I(i, fsa.λ[i] * V[i])
-            print(i, fsa.λ[i] * V[i])
             pfsa.set_F(i, ~V[i] * fsa.ρ[i])
             for a, j, w in fsa.arcs(i):
                 pfsa.add_arc(i, a, j, ~V[i] * w * V[j])
@@ -121,7 +120,6 @@ class Transformer:
         scc = SCC(F)
         for c in scc.scc():
             Fscc = scc.to_fsa(c)
-            # print(list(Fscc.Q))
             # test the cycle identity on every SCC
             if not Transformer.cycle_identity(Fscc):
                 return False
