@@ -149,7 +149,7 @@ class CFG:
         for elem in body:
             if isinstance(elem, NT):
                 self.V.add(elem)
-            elif isinstance(elem, Sym) or isinstance(elem, Expr) and elem != ε:
+            elif (isinstance(elem, Sym) or isinstance(elem, Expr)) and elem != ε:
                 self.Sigma.add(elem)
             elif elem != ε:
                 raise InvalidProduction
