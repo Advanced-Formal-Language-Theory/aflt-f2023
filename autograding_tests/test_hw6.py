@@ -24,25 +24,21 @@ def test_nullary_example():
 
     cfg = CFG.from_string(
         """
-        A → ε:	1
-        A → c:	42
-        A → A A:	3
-        A → B B:	36
-        A → D B:	13
-        A → B D:	29
-        A → ε:	24
-        B → c:	42
-        B → ε:	22
-        B → A B:	26
-        B → c B:	13
-        B → A ε:	11
-        B → c A:	39
-        D → A:	41
-        D → c:	24
-        D → ε:	0
-        D → D ε:	5
-        D → ε B:	3
-        D → B B:	2
+        A → ε:  17
+        A → b:  5
+        A → A A:        40
+        A → A D:        8
+        A → D D:        33
+        D → ε:  34
+        D → b:  21
+        D → A A:        30
+        D → A D:        46
+        D → D A:        5
+        S → ε:  31
+        S → b:  37
+        S → A A:        28
+        S → A D:        43
+        S → D A:        14
         """.strip(), R)
 
     cfg_sum = Treesum(cfg).sum()
@@ -79,21 +75,25 @@ def test_unary_example():
 
     cfg = CFG.from_string(
 		"""
-		A → ε:	17
-        A → b:	5
-        A → A A:	40
-        A → A D:	8
-        A → D D:	33
-        D → ε:	34
-        D → b:	21
-        D → A A:	30
-        D → A D:	46
-        D → D A:	5
-        S → ε:	31
-        S → b:	37
-        S → A A:	28
-        S → A D:	43
-        S → D A:	14
+		A → ε:    1
+        A → c:  42
+        A → A A:    3
+        A → B B:    36
+        A → D B:    13
+        A → B D:    29
+        A → ε:  24
+        B → c:  42
+        B → ε:  22
+        B → A B:    26
+        B → c B:    13
+        B → A ε:    11
+        B → c A:    39
+        D → A:  41
+        D → c:  24
+        D → ε:  0
+        D → D ε:    5
+        D → ε B:    3
+        D → B B:    2
 		""".strip(), R)
 
     cfg_sum = Treesum(cfg).sum()
