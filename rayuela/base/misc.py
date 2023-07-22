@@ -266,6 +266,7 @@ def compare_charts(chart1, chart2) -> "tuple[bool,bool]":
 
 
 def compare_chart(semiring, chart1, chart2):
+    correct = True
     for item in set(chart1.keys()).intersection(set(chart2.keys())):
         if np.allclose(float(chart1[item]), float(chart2[item]), atol=1e-5):
             print("\t".join([colors.green % str(item), str(chart1[item])]))
@@ -275,11 +276,12 @@ def compare_chart(semiring, chart1, chart2):
                     [colors.light.red % str(item), str(chart1[item]), str(chart2[item])]
                 )
             )
-    return
+            correct = False
     for item in chart2:
         if item not in chart1:
             if chart2[item] != semiring.zero:
                 print("\t".join([colors.yellow % str(item), str(chart2[item])]))
+    return correct
 
 
 def ansi(color=None, light=None, bg=3):
