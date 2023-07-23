@@ -65,10 +65,7 @@ def test_earley_example_tropical():
     input = symify("abc")
     ep = ChartedEarley(cfg)
     parser = Parser(cfg)
-    try:
-        assert(compare_chart(R, ep.earley_chart(input) ,parser._cky(input)))
-    except Exception as e:
-        print(e)
+    compare_chart(R, ep.earley_chart(input) ,parser._cky(input))
     assert (allclose(float(ep.earley(input)), float(parser.cky(input)), 1e-5))
 
 def test_earley_example_real():
@@ -105,12 +102,8 @@ def test_earley_example_real():
     input = symify("abc")
     ep = ChartedEarley(cfg)
     parser = Parser(cfg)
-    try:
-        assert compare_chart(R, ep.earley_chart(input),parser._cky(input))
-    except Exception as e:
-        print(e)
+    compare_chart(R, ep.earley_chart(input),parser._cky(input))
     assert (allclose(float(ep.earley(input)), float(parser.cky(input)), 1e-5))
-    assert False
 
 def test_earley():
     with open(f"{hw_path}/cfgs.pkl", 'rb') as f:
@@ -126,8 +119,5 @@ def test_earley():
         ep = ChartedEarley(cfg)
         chart = ep.earley_chart(input)
         score = float(ep.earley(input))
-        try:
-            assert compare_chart(cfg.R, chart, gold_chart)
-        except Exception as e:
-            print(e)
+        compare_chart(cfg.R, chart, gold_chart)
         assert allclose(score, gold_score, atol=1e-5)
