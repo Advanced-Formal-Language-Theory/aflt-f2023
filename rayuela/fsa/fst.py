@@ -57,6 +57,7 @@ class FST(FSA):
         self.Sigma.add(a)
         self.Delta.add(b)
         self.δ[i][(a, b)][j] += w
+        self.δ_inv[j][(a, b)][i] += w
 
     def set_arc(self, i, a, b, j, w=None):
         if w is None: w = self.R.one
@@ -71,6 +72,7 @@ class FST(FSA):
         self.Sigma.add(a)
         self.Delta.add(b)
         self.δ[i][(a, b)][j] = w
+        self.δ_inv[j][(a, b)][i] = w
 
     def freeze(self):
         self.Sigma = frozenset(self.Sigma)
