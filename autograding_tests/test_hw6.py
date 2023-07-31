@@ -55,7 +55,7 @@ def test_nullary_example():
 def test_nullary():
 
 
-    with open(f"{hw_path}/cfgs.pkl", 'rb') as f:
+    with open(f"{hw_path}/cnfs.pkl", 'rb') as f:
         cfgs = pickle.load(f)
 
     for cfg in cfgs:
@@ -111,7 +111,7 @@ def test_unary():
 
 
 
-    with open(f"{hw_path}/cnfs.pkl", 'rb') as f:
+    with open(f"{hw_path}/cfgs.pkl", 'rb') as f:
         cfgs = pickle.load(f)
 
     for cfg in cfgs:
