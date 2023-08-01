@@ -119,7 +119,7 @@ class FST(FSA):
                  if b == c]
 
             for (a, j1, w1), (d, j2, w2) in M:
-                product_fst.set_arc(
+                product_fst.add_arc(
                     PairState(q1, q2), a, d,
                     PairState(j1, j2), w=w1*w2)
 
