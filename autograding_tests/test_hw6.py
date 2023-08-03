@@ -48,7 +48,7 @@ def test_nullary_example():
     rcfg_sum = Treesum(rcfg).sum()
 
     for (p,w) in rcfg.P:
-        assert not nullary(p)
+        assert not nullary(p, rcfg)
 
     assert (allclose(float(cfg_sum), float(rcfg_sum), atol=10e-5))
 
@@ -66,7 +66,7 @@ def test_nullary():
         rcfg_sum = Treesum(rcfg).sum()
 
         for (p,w) in rcfg.P:
-            assert not nullary(p)
+            assert not nullary(p, rcfg)
         assert (allclose(float(cfg_sum), float(rcfg_sum), atol=10e-5))
 
 def test_unary_example():

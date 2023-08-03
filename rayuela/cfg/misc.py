@@ -24,12 +24,14 @@ def binarized(p):
         return True
     return False
 
-def nullary(p):
+def nullary(p, cfg):
     # ε
     head, body = p
-    if head == S:
+    if head == cfg.S:
         # When head is S we allow the ε in the body
         return False
+    if len(body) == 0:
+        return True
     for elem in body:
         if elem == ε:
             return True
