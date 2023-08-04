@@ -75,25 +75,19 @@ def test_unary_example():
 
     cfg = CFG.from_string(
 		"""
-		A → ε:    1
-        A → c:  42
+		A → c:  42
         A → A A:    3
         A → B B:    36
         A → D B:    13
         A → B D:    29
-        A → ε:  24
-        B → c:  42
-        B → ε:  22
+        B → x:  42
         B → A B:    26
-        B → c B:    13
-        B → A ε:    11
-        B → c A:    39
+        B → A:    11
         D → A:  41
-        D → c:  24
-        D → ε:  0
-        D → D ε:    5
-        D → ε B:    3
-        D → B B:    2
+        D → y:  24
+        D → B:    3
+        S → B A:    53
+        S → ε:  33
 		""".strip(), R)
 
     cfg_sum = Treesum(cfg).sum()
