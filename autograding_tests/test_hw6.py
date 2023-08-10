@@ -24,21 +24,21 @@ def test_nullary_example():
 
     cfg = CFG.from_string(
         """
-        A → ε:  17
-        A → b:  5
-        A → A A:        40
-        A → A D:        8
-        A → D D:        33
-        D → ε:  34
-        D → b:  21
-        D → A A:        30
-        D → A D:        46
-        D → D A:        5
-        S → ε:  31
-        S → b:  37
-        S → A A:        28
-        S → A D:        43
-        S → D A:        14
+        A → ε:	17
+        A → b:	5
+        A → A A:	40
+        A → A D:	8
+        A → D D:	33
+        D → ε:	34
+        D → b:	21
+        D → A A:	30
+        D → A D:	46
+        D → D A:	5
+        S → ε:	31
+        S → b:	37
+        S → A A:	28
+        S → A D:	43
+        S → D A:	14
         """.strip(), R)
 
     cfg_sum = Treesum(cfg).sum()
@@ -55,7 +55,7 @@ def test_nullary_example():
 def test_nullary():
 
 
-    with open(f"{hw_path}/cnfs.pkl", 'rb') as f:
+    with open(f"{hw_path}/cnfs_nullary.pkl", 'rb') as f:
         cfgs = pickle.load(f)
 
     for cfg in cfgs:
@@ -74,21 +74,21 @@ def test_unary_example():
     R= Tropical
 
     cfg = CFG.from_string(
-		"""
-		A → c:  42
-        A → A A:    3
-        A → B B:    36
-        A → D B:    13
-        A → B D:    29
-        B → x:  42
-        B → A B:    26
-        B → A:    11
-        D → A:  41
-        D → y:  24
-        D → B:    3
-        S → B A:    53
-        S → ε:  33
-		""".strip(), R)
+        """
+        A → c:	42
+        A → A A:	  3
+        A → B B:	  36
+        A → D B:	  13
+        A → B D:	  29
+        B → x:	42
+        B → A B:	  26
+        B → A:	  11
+        D → A:	41
+        D → y:	24
+        D → B:	  3
+        S → B A:	  53
+        S → ε:	33
+        """.strip(), R)
 
     cfg_sum = Treesum(cfg).sum()
 
@@ -105,7 +105,7 @@ def test_unary():
 
 
 
-    with open(f"{hw_path}/cfgs.pkl", 'rb') as f:
+    with open(f"{hw_path}/cnfs_unary.pkl", 'rb') as f:
         cfgs = pickle.load(f)
 
     for cfg in cfgs:
