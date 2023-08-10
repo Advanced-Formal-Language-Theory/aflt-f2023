@@ -18,6 +18,7 @@ from rayuela.cfg.treesum import Treesum
 pickles_path = "autograding_tests/pickles"
 hw_path = pickles_path + "/hw6"
 
+
 def test_nullary_example():
     
     R= Tropical
@@ -52,8 +53,8 @@ def test_nullary_example():
 
     assert (allclose(float(cfg_sum), float(rcfg_sum), atol=10e-5))
 
-def test_nullary():
 
+def test_nullary():
 
     with open(f"{hw_path}/cnfs_nullary.pkl", 'rb') as f:
         cfgs = pickle.load(f)
@@ -68,6 +69,8 @@ def test_nullary():
         for (p,w) in rcfg.P:
             assert not nullary(p, rcfg)
         assert (allclose(float(cfg_sum), float(rcfg_sum), atol=10e-5))
+
+
 
 def test_unary_example():
     
@@ -101,9 +104,8 @@ def test_unary_example():
 
     assert (allclose(float(cfg_sum), float(ucfg_sum), atol=10e-5))
 
+
 def test_unary():
-
-
 
     with open(f"{hw_path}/cnfs_unary.pkl", 'rb') as f:
         cfgs = pickle.load(f)
@@ -119,3 +121,60 @@ def test_unary():
             assert not unary(p)
 
         assert allclose(float(cfg_sum), float(ucfg_sum), atol=10e-5)
+
+
+
+def test_nullary_extra_example():
+
+    R= Tropical
+
+    cfg = CFG.from_string(
+        """
+        A → ε:  1
+        A → c:  42
+        A → A A:    3
+        A → B B:    36
+        A → D B:    13
+        A → B D:    29
+        A → ε:  24
+        B → c:  42
+        B → ε:  22
+        B → A B:    26
+        B → c B:    13
+        B → A ε:    11
+        B → c A:    39
+        D → A:  41
+        D → c:  24
+        D → ε:  0
+        D → D ε:    5
+        D → ε B:    3
+        D → B B:    2
+        """.strip(), R)
+
+    cfg_sum = Treesum(cfg).sum()
+
+    transformer = Transformer()
+    rcfg = transformer.nullaryremove(cfg)
+    rcfg_sum = Treesum(rcfg).sum()
+
+    for (p,w) in rcfg.P:
+        assert not nullary(p, rcfg)
+
+    assert (allclose(float(cfg_sum), float(rcfg_sum), atol=10e-5))
+
+
+def test_nullary_extra():
+
+    with open(f"{hw_path}/cfgs.pkl", 'rb') as f:
+        cfgs = pickle.load(f)
+
+    for cfg in cfgs:
+        cfg_sum = Treesum(cfg).sum()
+
+        transformer = Transformer()
+        rcfg = transformer.nullaryremove(cfg)
+        rcfg_sum = Treesum(rcfg).sum()
+
+        for (p,w) in rcfg.P:
+            assert not nullary(p, rcfg)
+        assert (allclose(float(cfg_sum), float(rcfg_sum), atol=10e-5))
